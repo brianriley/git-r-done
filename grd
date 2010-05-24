@@ -1,0 +1,85 @@
+#!/bin/bash
+
+source `pwd`/`dirname $0`/.grd/config
+
+USAGE="usage: grd COMMAND [ARGS]\n
+\n
+Where COMMAND is one of:\n
+\tadd\t\tAdd a todo item\n
+\tfinish\t\tMark a todo item as completed\n
+\tlist\t\tList all open todo items\n
+\tremove\t\tRemove a todo item from the list"
+
+function _error {
+    echo -e $@
+    exit 1
+}
+
+function add {
+    todo=$@
+
+    echo $todo >> $TODO_FILE
+    [ $? -ne 0 ] && exit 1
+
+    git commit -am "Added todo: $todo"
+}
+
+function finish {
+    remove $1 0
+    echo $todo >> $DONE_FILE
+    [ $? -ne 0 ] && exit 1
+
+    git commit -am "Finished todo: $todo"
+}
+
+function list {
+    num_todo=`cat $TODO_FILE | wc -l`
+    num_done=`cat $DONE_FILE | wc -l`
+
+    if [ $num_done -ne 0 ]; then
+        total_items=$(( $num_todo + $num_done ))
+        _pd=$(echo "scale=2; $num_done/$total_items" | bc)
+        percent_done=`echo $(echo "$_pd*100" | bc) | awk -F "." '{print $1}'`
+    else
+        percent_done=0
+    fi
+
+    awk -F "$DELIM" '{print NR"\t"$1}' $TODO_FILE
+    echo "---------------"
+    echo "$percent_done% complete"
+}
+
+function remove {
+    [ -z $1 ] && _error "ERROR: requires the todo item ID"
+    
+    todo=`awk "NR==$1" $TODO_FILE`
+    [ -z $todo ] && _error "ERROR: todo with ID $1 not found"
+
+    sed -i "" -e "/$todo/ d" $TODO_FILE
+    [ $? -ne 0 ] && exit 1
+
+    [ -z $2 ] && git commit -am "Removed todo: $todo"
+}
+
+cmd=$1
+shift
+
+case "$cmd" in
+    add)
+        add $@
+    ;;
+    finish)
+        finish $1
+    ;;
+    list)
+        list
+    ;;
+    remove)
+        remove $1
+    ;;
+    *)
+        _error $USAGE
+    ;;
+esac
+
+exit 0

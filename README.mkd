@@ -1,0 +1,67 @@
+grd: Git-R-Done
+===============
+
+Harness the power of git to manage your todo lists.
+
+Requirements
+============
+
+* git
+* Bash
+
+Sample Usage
+============
+
+1. Create a branch to track your new project's todo list:
+
+	$ git checkout -b new_project
+
+Keep master clean for pulling down updates to grd. Projects can be separated out into local branches--for easy deleting and merging. Push branches to a remote server for backup or access from multiple machines.
+
+2. Add an item to the todo list:
+
+	$ ./grd add Do something
+
+3. Work, work, work
+
+4. View your todo list:
+
+	$ ./grd list
+	1		Do something
+
+5. Complete a todo item:
+
+	$ ./grd finish 1
+
+(Refer to items by the number given with `list`.)
+
+Commands
+========
+
+list
+----
+
+Lists all of your todo items.
+
+`$ ./grd list`
+
+add
+---
+
+Add a new todo item.
+
+`$ ./grd add Paint the house`
+
+finish
+------
+
+Mark a todo item as complete. Requires the todo item's ID from the `list` command.
+
+`$ ./grd finish 2`
+
+remove
+------
+
+Remove an accidental addition to your todo list. Requires the todo item's ID from the `list` command.
+
+`$ ./grd remove 2`
